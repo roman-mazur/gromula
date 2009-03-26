@@ -1,0 +1,4 @@
+#Thu Mar 26 22:57:49 EET 2009
+eclipse.preferences.version=1
+groovy.compiler.output.path=bin-groovy
+groovy.runtime.lib.source=GROOVY_HOME
