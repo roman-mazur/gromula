@@ -1,0 +1,14 @@
+package org.mazur.gromulaimport org.mazur.gromula.gui.MainFrameStateimport java.util.EventObjectimport groovy.swing.SwingBuilder
+
+import java.awt.BorderLayout as BL
+import java.awt.Font
+
+import javax.swing.WindowConstants as WC
+import javax.swing.JToolBar
+import javax.swing.UIManager
+
+/**
+ * Version: $Id$
+ * @author Roman Mazur (mailto: mazur.roman@gmail.com)
+ */
+public final class Starter {    static final int MIN_FONT_SIZE = 8, MAX_FONT_SIZE = 24    /** State. */  private MainFrameState state = new MainFrameState()  /** Builder. */  private def swing = new SwingBuilder()  /** Action to make the code font smaller. */  private def smallerFontAction = swing.action(    name : 'Smaller font', mnemonic : 'S',    accelerator : 'alt shift S',    keyStroke : 'alt shift S',    closure : {      if (!state.activeDocument) { return }      int s = state.activeCodeArea.font.size - 2      if (s < MIN_FONT_SIZE) { s = MIN_FONT_SIZE }      state.activeCodeArea.font = Utils.createCodeFont(s)    }  )      /** Action to make the code font smaller. */  private def largerFontAction = swing.action(    name : 'Larger font', mnemonic : 'L',    accelerator : 'alt shift L',    keyStroke : 'alt shift L',    closure : {      if (!state.activeDocument) { return }      int s = state.activeCodeArea.font.size + 2      if (s > MAX_FONT_SIZE) { s = MAX_FONT_SIZE }      state.activeCodeArea.font = Utils.createCodeFont(s)    }  )  /** Document tabs. */  private def documentTabs = swing.tabbedPane(constraints : BL.CENTER)  private void addDocToTab() {    SwingBuilder.build() {      def panel = panel(border : raisedEtchedBorder()) {        borderLayout()        widget(state.activeCodeArea)      }      documentTabs.add(panel, state.activeDocument.name)    }  }  /** Create new document action. */  private def newDocumentAction = swing.action(    name : 'New document', mnemonic : 'N',    accelerator : 'alt shift N',    keyStroke : 'alt shift N',    closure : {      state.newDocument()      addDocToTab()    }  )  /** Main frame. */  private def mainFrame = swing.frame(title : 'Gromula',                                      defaultCloseOperation : WC.EXIT_ON_CLOSE) {    borderLayout()    panel(constraints : BL.CENTER) {      borderLayout()      widget(documentTabs)      textArea(constraints : BL.SOUTH, text : bind(source : state, sourceProperty : 'log')) // ,     }    toolBar(constraints : BL.EAST, orientation : JToolBar.VERTICAL) {      button(action : smallerFontAction)      button(action : largerFontAction)    }  }  private Starter() {    newDocumentAction.actionPerformed()    mainFrame.pack()    mainFrame.size = [500, 300]    mainFrame.show()  }    static void main(final String[] args) {    //UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName())    new Starter()  }}
