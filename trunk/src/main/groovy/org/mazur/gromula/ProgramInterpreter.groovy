@@ -80,7 +80,7 @@ class CommonClasures {
   /** Declare a processor. */
   def processor = { Map args ->
     Processor p = new Processor(name : args['name'])
-    def qName = args['queue'].toLowerCase()
+    def qName = args['queue']?.toLowerCase()
     if (!qName) { qName = 'fifo' }
     p.queue = queuesFactory."$qName"()
     ctx.processorsMap[p.name] = p
