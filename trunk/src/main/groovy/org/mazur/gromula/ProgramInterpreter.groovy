@@ -1,7 +1,7 @@
 package org.mazur.gromula
 
 import groovy.lang.Bindingimport org.codehaus.groovy.control.CompilerConfigurationimport java.io.StringWriterimport java.io.PrintWriterimport groovy.lang.Scriptimport org.mazur.gromula.model.Event
-import java.util.Randomimport org.mazur.gromula.model.Storageimport org.mazur.gromula.model.Processor
+import java.util.Randomimport org.mazur.gromula.model.Storageimport org.mazur.gromula.model.Processorimport org.mazur.gromula.model.queues.QueuesFactory
 /**
  * Version: $Id$
  * @author Roman Mazur (mailto: mazur.roman@gmail.com)
@@ -49,19 +49,27 @@ class Context {
 
 class CommonClasures {
   private def doLog
+  /** Model context. */
   private Context ctx
-  private Random randomGen
+  /** Random generator, */
+  private Random randomGen = new Random()
+  /** Queues factory. */
+  private QueuesFactory queuesFactory = new QueuesFactory()
   
+  /** Constrcutor with the context. */
   CommonClasures(def ctx) { this.ctx = ctx }
   
+  /** Call event. */
   private void callEvent(Event e) {
     println "Calling $e"
     ctx.time++
     e.action()
   }
   
+  /** Logging for a user. */
   def log = { doLog(it) }
   
+  /** Declare an event. */
   def event = { Map args, def action = {} ->
     Event e = new Event()
     e.name = args['name']
@@ -69,23 +77,31 @@ class CommonClasures {
     ctx.eventsMap[e.name] = e
   }
   
+  /** Declare a processor. */
   def processor = { Map args ->
     Processor p = new Processor(name : args['name'])
+    def qName = args['queue'].toLowerCase()
+    if (!qName) { qName = 'fifo' }
+    p.queue = queuesFactory."$qName"()
     ctx.processorsMap[p.name] = p
     log("$p was initialized")
   }
 
+  /** Declare a storage. */
   def storage = { Map args ->
     Storage s = new Storage(name : args['name'])
     ctx.storagesMap[s.name] = s
     log("$s was initialized")
   }
   
+  /** Start point. */
   def start = { it() }
   
   def fire = { String eName -> callEvent(ctx.eventsMap[eName]) }
   
+  /** Get random number [0;1). */
   def random = { return randomGen.nextFloat() }
   
+  /** Get random number with the Gaus distribution. */
   def randomGaus = { return randomGen.nextGaussian() }
 }

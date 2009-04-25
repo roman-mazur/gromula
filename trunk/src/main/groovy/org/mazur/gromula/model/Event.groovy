@@ -3,6 +3,8 @@ package org.mazur.gromula.model
 
 
 /**
+ * Event that is occured within the model.
+ * 
  * Version: $Id$
  *
  * @author Roman Mazur (mailto: mazur.roman@gmail.com)

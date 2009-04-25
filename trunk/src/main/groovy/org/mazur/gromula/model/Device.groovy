@@ -3,6 +3,8 @@ package org.mazur.gromula.model
 
 
 /**
+ * Abstract device
+ * 
  * Version: $Id$
  *
  * @author Roman Mazur (mailto: mazur.roman@gmail.com)
