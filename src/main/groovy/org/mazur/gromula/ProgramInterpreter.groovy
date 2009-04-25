@@ -11,7 +11,8 @@ class ProgramInterpreter {
 
   /** Names of objects to bind. */
   private static final def BIND_LIST = [
-    'event', 'processor', 'storage', 'start', 'fire', 'random', 'randomGaus',
+    'event', 'processor', 'storage', 'start', 'fire', 
+    'uniform', 'normal',
     'log'
   ]
   
@@ -100,8 +101,8 @@ class CommonClasures {
   def fire = { String eName -> callEvent(ctx.eventsMap[eName]) }
   
   /** Get random number [0;1). */
-  def random = { return randomGen.nextFloat() }
+  def uniform = { return randomGen.nextFloat() }
   
   /** Get random number with the Gaus distribution. */
-  def randomGaus = { return randomGen.nextGaussian() }
+  def normal = { return randomGen.nextGaussian() }
 }
