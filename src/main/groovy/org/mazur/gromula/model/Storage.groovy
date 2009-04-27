@@ -15,4 +15,12 @@ public class Storage extends Device {
   int totalAmout
   /** Current size. */
   int currentSize
+
+  protected boolean canProcess(final Request request) {
+    return currentSize + request.weight <= totalAmout
+  }
+  
+  protected void process(final Request request) {
+    currentSize += request.weight
+  }
 }

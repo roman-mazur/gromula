@@ -15,7 +15,11 @@ public class Processor extends Device{
   /** Device state. */
   boolean busy
   
-  /** Requests queue. */
-  Queue queue
+  protected boolean canProcess(final Request request) {
+    return !busy
+  }
   
+  protected void process(final Request request) {
+    busy = true
+  }
 }

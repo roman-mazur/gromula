@@ -1,7 +1,7 @@
 package org.mazur.gromula
 
 import groovy.lang.Bindingimport org.codehaus.groovy.control.CompilerConfigurationimport java.io.StringWriterimport java.io.PrintWriterimport groovy.lang.Scriptimport org.mazur.gromula.model.Event
-import java.util.Randomimport org.mazur.gromula.model.Storageimport org.mazur.gromula.model.Processorimport org.mazur.gromula.model.queues.QueuesFactory
+import java.util.Randomimport org.mazur.gromula.model.Storageimport org.mazur.gromula.model.Processorimport org.mazur.gromula.model.queues.QueuesFactoryimport org.mazur.gromula.model.Requestimport org.mazur.gromula.model.queues.Queueimport java.lang.IllegalArgumentException
 /**
  * Version: $Id$
  * @author Roman Mazur (mailto: mazur.roman@gmail.com)
@@ -11,7 +11,8 @@ class ProgramInterpreter {
 
   /** Names of objects to bind. */
   private static final def BIND_LIST = [
-    'event', 'processor', 'storage', 'start', 'fire', 
+    'event', 'processor', 'storage', 'start', 'fire',
+    'request',
     'uniform', 'normal',
     'log'
   ]
@@ -25,7 +26,7 @@ class ProgramInterpreter {
     compilerConf.recompileGroovySource = true
   }
   
-  void runScript(def scriptCode, def log) {
+  boolean runScript(def scriptCode, def log, def error) {
     Context ctx = new Context()
     CommonClasures clasures = new CommonClasures(ctx)
     Binding binding = new Binding()
@@ -35,7 +36,13 @@ class ProgramInterpreter {
       log(msg.toString())
     }
     def shell = new GroovyShell(binding, compilerConf)
-    def res = shell.evaluate(scriptCode)
+    try {
+      def res = shell.evaluate(scriptCode)
+      return true
+    } catch (InterpreterException e) {
+      error(e.message)
+      return false
+    }
   }
   
   
@@ -45,7 +52,7 @@ class Context {
   /** Internal time. */
   long time
   /** Context maps */
-  def eventsMap = [:], processorsMap = [:], storagesMap = [:]
+  def eventsMap = [:], devicesMap = [:]
 }
 
 class CommonClasures {
@@ -59,6 +66,9 @@ class CommonClasures {
   
   /** Constrcutor with the context. */
   CommonClasures(def ctx) { this.ctx = ctx }
+  
+  private String processorName(def name) { return "_processor_$name" }
+  private String storageName(def name) { return "_storage_$name" }
   
   /** Call event. */
   private void callEvent(Event e) {
@@ -75,24 +85,42 @@ class CommonClasures {
     Event e = new Event()
     e.name = args['name']
     e.action = action
+    if (ctx.eventsMap[e.name]) {
+      throw new InterpreterException("Event with name ${e.name} is already declared.") 
+    }
     ctx.eventsMap[e.name] = e
+  }
+  
+  private Queue createQueue(def type) {  
+    def qName = type?.toLowerCase()
+    if (!qName) { qName = 'fifo' }
+    return queuesFactory."$qName"()
   }
   
   /** Declare a processor. */
   def processor = { Map args ->
-    Processor p = new Processor(name : args['name'])
-    def qName = args['queue']?.toLowerCase()
-    if (!qName) { qName = 'fifo' }
-    p.queue = queuesFactory."$qName"()
-    ctx.processorsMap[p.name] = p
+    def q = createQueue(args['queue'])
+    Processor p = new Processor(name : args['name'], queue : q)
+    def n = processorName(p.name)
+    if (ctx.devicesMap[n]) { 
+      throw new InterpreterException("Processor with name ${p.name} is already declared.") 
+    }
+    ctx.devicesMap[n] = p
     log("$p was initialized")
+    return p
   }
 
   /** Declare a storage. */
   def storage = { Map args ->
-    Storage s = new Storage(name : args['name'])
-    ctx.storagesMap[s.name] = s
+    def q = createQueue(args['queue'])
+    Storage s = new Storage(name : args['name'], queue : q)
+    def n = storageName(s.name)
+    if (ctx.devicesMap[n]) { 
+      throw new InterpreterException("Storage with name ${s.name} is already declared.") 
+    }
+    ctx.devicesMap[n] = s
     log("$s was initialized")
+    return s
   }
   
   /** Start point. */
@@ -100,9 +128,17 @@ class CommonClasures {
   
   def fire = { String eName -> callEvent(ctx.eventsMap[eName]) }
   
-  /** Get random number [0;1). */
+  /** Request the device. */
+  def request = { String deviceName, int w, int p = 5 ->
+    Request r = new Request(priority : p, weight : w)
+    def d = devicesMap[deviceName]
+    d.request(r)
+    return r
+  }
+  
+  /** Get a random number [0;1). */
   def uniform = { return randomGen.nextFloat() }
   
-  /** Get random number with the Gaus distribution. */
+  /** Get a random number with the normal distribution. */
   def normal = { return randomGen.nextGaussian() }
 }
