@@ -13,4 +13,7 @@ public class Request {
   /** Request priority. */
   int priority = 5
   
+  /** Request weight. */
+  int weight
+  
 }

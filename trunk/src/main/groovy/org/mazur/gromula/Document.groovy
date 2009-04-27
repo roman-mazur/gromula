@@ -15,5 +15,7 @@ public class Document {
   
   /** Source file. */
   File sourceFile
-  
+
+  /** Index for the pane. */
+  int index
 }
