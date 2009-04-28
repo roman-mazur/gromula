@@ -1,7 +1,8 @@
 package org.mazur.gromula
 
 import groovy.lang.Bindingimport org.codehaus.groovy.control.CompilerConfigurationimport java.io.StringWriterimport java.io.PrintWriterimport groovy.lang.Scriptimport org.mazur.gromula.model.Event
-import java.util.Randomimport org.mazur.gromula.model.Storageimport org.mazur.gromula.model.Processorimport org.mazur.gromula.model.queues.QueuesFactoryimport org.mazur.gromula.model.Requestimport org.mazur.gromula.model.queues.Queueimport java.lang.IllegalArgumentException
+import java.util.Randomimport org.mazur.gromula.model.Storageimport org.mazur.gromula.model.Processorimport org.mazur.gromula.model.queues.QueuesFactoryimport org.mazur.gromula.model.Requestimport org.mazur.gromula.model.queues.Queueimport java.lang.IllegalArgumentExceptionimport org.mazur.gromula.InterpreterException
+
 /**
  * Version: $Id$
  * @author Roman Mazur (mailto: mazur.roman@gmail.com)
@@ -41,8 +42,13 @@ class ProgramInterpreter {
       return true
     } catch (InterpreterException e) {
       error(e.message)
-      return false
+    } catch (Exception e) {
+      StringWriter sw = new StringWriter()
+      PrintWriter p = new PrintWriter(sw)
+      e.printStackTrace(p)
+      error("-----------------\nCompilation error:\n${sw}\n-----------------")
     }
+    return false
   }
   
   
