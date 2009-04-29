@@ -10,8 +10,12 @@ import org.mazur.gromula.model.queues.Queue
  * @author Roman Mazur (mailto: mazur.roman@gmail.com)
  *
  */
-public abstract class Device{
+public abstract class Device {
 
+  /** Count of the processed requests. */
+  int processedRequestsCount = 0
+  private int totalRequests = 0
+  
   /** Device name. */
   String name
   
@@ -36,11 +40,33 @@ public abstract class Device{
    * Request the device.
    * @param request request instance
    */
-  public void request(final Request request) {
+  public boolean request(final Request request) {
+    ++totalRequests
     if (canProcess(request)) {
       process(request)
+      return true
     } else {
       queue.add(request)
+      return false
     }
   }
+  
+  /**
+   * Release the device.
+   * @param request request instance
+   */
+  public abstract void release(final Request request)
+  
+  public void prepareForReport(int totalTime) {
+    queue.blockLengthAnalyze = true
+    while (queue.get());
+  }
+  
+  public Integer getMinQueueSize() { return queue.minLength }
+  public Integer getMaxQueueSize() { return queue.maxLength }
+  public Double getAvgQueueSize() { return queue.avgLength }
+  public Integer getMinWaitTime() { return queue.minWaitTime }
+  public Integer getMaxWaitTime() { return queue.maxWaitTime }
+  public Double getAvgWaitTime() { return totalRequests ? queue.sumWaitTime / totalRequests : null }
+  public abstract Double getEfficiency()
 }

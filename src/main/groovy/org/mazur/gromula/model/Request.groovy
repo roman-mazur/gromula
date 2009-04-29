@@ -15,5 +15,9 @@ public class Request {
   
   /** Request weight. */
   int weight
+
+  /** Create time. */
+  int createTime
   
+  String toString() { return "Request[priority : $priority, weight : $weight, createTime: $createTime]" }
 }

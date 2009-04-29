@@ -13,9 +13,9 @@ package org.mazur.gromula.model.queues
 public class QueuesFactory {
 
   /** FIFO queue. */
-  def fifo = { new FIFOQueue() }
+  def fifo = { new FIFOQueue(getTime : it) }
   
   /** Priority queue. */
-  def priority = { new PriorityQueue() }
+  def priority = { new PriorityQueue(getTime : it) }
   
 }

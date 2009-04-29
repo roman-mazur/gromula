@@ -11,16 +11,31 @@ import java.util.Comparatorimport org.mazur.gromula.model.Request
  * @author Roman Mazur (mailto: mazur.roman@gmail.com)
  *
  */
-public class PriorityQueue implements Queue {
+public class PriorityQueue extends Queue {
   /** Initial capacity. */
   private static final int INIT_CAPACITY = 10
   /** Real queue. */
   private PQ<Request> queue = new PQ(INIT_CAPACITY, new RequestsComparator()) 
   
-  Request get() { return queue.poll() }
+  protected Request getRequest() { return queue.poll() }
   
-  void add(Request r) { queue.add(r) }
+  protected void addRequest(Request r) { queue.add(r) }
   
+  protected Request getFirstRequest(final int margin) {
+    Iterator<Request> iterator = queue.iterator()
+    Request result = null
+    while (iterator.hasNext()) {
+      Request r = iterator.next()
+      if (r.weight < margin) {
+        result = r
+        iterator.remove()
+        break
+      }
+    }
+    return result
+  }
+
+  int size() { return queue.size() }
 }
 
 /**
