@@ -1,0 +1,1 @@
+Modelling the calculating system oriented on events processing
